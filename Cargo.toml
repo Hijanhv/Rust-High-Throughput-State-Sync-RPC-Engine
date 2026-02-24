@@ -1,0 +1,62 @@
+[package]
+name = "state-sync-engine"
+version = "0.1.0"
+edition = "2021"
+description = "High-throughput distributed state sync engine with JSON-RPC 2.0 interface"
+readme = "README.md"
+license = "MIT"
+
+# Both a library (for benchmarks to import) and a binary
+[lib]
+name = "state_sync_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "state-sync-engine"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime — full feature set for net, time, signal, sync primitives
+tokio = { version = "1", features = ["full"] }
+# CancellationToken for cooperative graceful shutdown
+tokio-util = { version = "0.7", features = ["codec"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Compact binary codec for gossip wire format (~2× smaller than JSON)
+bincode = "1"
+
+# Concurrent hash map with per-shard locks — no global lock for peer tracking
+dashmap = "6"
+
+# Faster RwLock: no poisoning, better uncontended perf, no async overhead
+# (safe here because we never hold it across .await points)
+parking_lot = "0.12"
+
+# Structured logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4"] }
+anyhow = "1"
+thiserror = "2"
+rand = "0.8"
+bytes = "1"
+clap = { version = "4", features = ["derive", "env"] }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "benchmarks"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+
+[profile.bench]
+opt-level = 3

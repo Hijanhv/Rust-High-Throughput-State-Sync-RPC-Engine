@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_LOG: "state_sync_engine=warn"
+
+jobs:
+  # ── Build & test ──────────────────────────────────────────────────────────
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry and build artefacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build (dev)
+        run: cargo build --all-targets
+
+      - name: Unit + integration tests
+        # Run with a single thread so the TCP port allocator in convergence.rs
+        # doesn't have to worry about OS port reuse across parallel processes.
+        run: cargo test -- --test-threads=4
+
+      - name: Clippy (zero warnings policy)
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Format check
+        run: cargo fmt --check
+
+  # ── Release build ─────────────────────────────────────────────────────────
+  release:
+    name: Release Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build (release)
+        run: cargo build --release
+
+  # ── Benchmarks compile check ───────────────────────────────────────────────
+  bench-compile:
+    name: Benchmarks Compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Compile benchmarks (no run)
+        run: cargo bench --no-run
