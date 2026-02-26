@@ -47,8 +47,7 @@ where
     T: Serialize,
     W: AsyncWriteExt + Unpin,
 {
-    let payload =
-        bincode::serialize(msg).map_err(|e| anyhow::anyhow!("gossip encode: {}", e))?;
+    let payload = bincode::serialize(msg).map_err(|e| anyhow::anyhow!("gossip encode: {}", e))?;
     let len = payload.len() as u32;
     writer.write_all(&len.to_be_bytes()).await?;
     writer.write_all(&payload).await?;

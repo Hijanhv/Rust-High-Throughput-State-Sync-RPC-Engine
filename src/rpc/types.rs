@@ -68,7 +68,11 @@ pub mod error_codes {
 
 impl RpcResponse {
     pub fn ok(result: Value, id: Value) -> Self {
-        Self { jsonrpc: "2.0", result, id }
+        Self {
+            jsonrpc: "2.0",
+            result,
+            id,
+        }
     }
 }
 
@@ -76,7 +80,11 @@ impl RpcError {
     pub fn new(code: i64, message: impl Into<String>, id: Value) -> Self {
         Self {
             jsonrpc: "2.0",
-            error: RpcErrorBody { code, message: message.into(), data: None },
+            error: RpcErrorBody {
+                code,
+                message: message.into(),
+                data: None,
+            },
             id,
         }
     }

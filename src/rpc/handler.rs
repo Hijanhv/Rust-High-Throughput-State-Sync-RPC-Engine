@@ -44,8 +44,7 @@ impl RpcHandler {
         let req: RpcRequest = match serde_json::from_str(raw) {
             Ok(r) => r,
             Err(e) => {
-                let err =
-                    RpcError::new(error_codes::PARSE_ERROR, e.to_string(), Value::Null);
+                let err = RpcError::new(error_codes::PARSE_ERROR, e.to_string(), Value::Null);
                 return DispatchResult::Response(to_json(&err));
             }
         };
@@ -61,12 +60,12 @@ impl RpcHandler {
         }
 
         let response_json = match req.method.as_str() {
-            "state.get"    => self.handle_state_get(&req.params, id),
-            "state.set"    => self.handle_state_set(&req.params, id),
-            "state.keys"   => self.handle_state_keys(id),
-            "node.peers"   => self.handle_node_peers(id),
-            "sync.status"  => self.handle_sync_status(id),
-            "sync.delta"   => self.handle_sync_delta(&req.params, id),
+            "state.get" => self.handle_state_get(&req.params, id),
+            "state.set" => self.handle_state_set(&req.params, id),
+            "state.keys" => self.handle_state_keys(id),
+            "node.peers" => self.handle_node_peers(id),
+            "sync.status" => self.handle_sync_status(id),
+            "sync.delta" => self.handle_sync_delta(&req.params, id),
             other => to_json(&RpcError::new(
                 error_codes::METHOD_NOT_FOUND,
                 format!("Method not found: {other}"),
@@ -140,7 +139,11 @@ impl RpcHandler {
             id,
         ));
 
-        DispatchResult::Subscribed { initial_response, receiver, prefix }
+        DispatchResult::Subscribed {
+            initial_response,
+            receiver,
+            prefix,
+        }
     }
 
     /// `state.keys` — returns all keys and total count.
@@ -209,7 +212,10 @@ impl RpcHandler {
             .collect();
 
         let count = entries.len();
-        to_json(&RpcResponse::ok(json!({ "entries": entries, "count": count }), id))
+        to_json(&RpcResponse::ok(
+            json!({ "entries": entries, "count": count }),
+            id,
+        ))
     }
 }
 
@@ -224,14 +230,11 @@ fn to_json<T: serde::Serialize>(v: &T) -> String {
 }
 
 fn required_str<'a>(params: &'a Value, field: &str, id: &Value) -> Result<&'a str, String> {
-    params
-        .get(field)
-        .and_then(Value::as_str)
-        .ok_or_else(|| {
-            to_json(&RpcError::new(
-                error_codes::INVALID_PARAMS,
-                format!("Missing required param: \"{field}\""),
-                id.clone(),
-            ))
-        })
+    params.get(field).and_then(Value::as_str).ok_or_else(|| {
+        to_json(&RpcError::new(
+            error_codes::INVALID_PARAMS,
+            format!("Missing required param: \"{field}\""),
+            id.clone(),
+        ))
+    })
 }

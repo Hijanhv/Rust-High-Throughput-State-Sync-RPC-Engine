@@ -136,11 +136,13 @@ async fn two_node_write_propagates() {
     node_a.store.set("hello".into(), "world".into());
 
     let elapsed = converge_within(
-        || node_b
-            .store
-            .get("hello")
-            .map(|v| v.value == "world")
-            .unwrap_or(false),
+        || {
+            node_b
+                .store
+                .get("hello")
+                .map(|v| v.value == "world")
+                .unwrap_or(false)
+        },
         Duration::from_secs(5),
         20,
     )

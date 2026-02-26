@@ -44,11 +44,7 @@ pub struct GossipManager {
 impl GossipManager {
     /// Create a manager.  `peers` is typically `Arc::new(DashMap::new())` and
     /// also handed to the RPC handler so both can read the same peer table.
-    pub fn new(
-        config: Config,
-        store: StateStore,
-        peers: Arc<DashMap<String, PeerInfo>>,
-    ) -> Self {
+    pub fn new(config: Config, store: StateStore, peers: Arc<DashMap<String, PeerInfo>>) -> Self {
         // Pre-register seed peers so the first gossip round has targets.
         for addr in config.seed_peers.iter().filter(|a| !a.is_empty()) {
             peers
@@ -180,11 +176,7 @@ impl GossipManager {
             // during TCP I/O).  Those newer entries would raise our local max
             // without B having received them, causing us to skip gossiping them
             // in future rounds (delta_since would return empty for B).
-            let max_sent_ts = delta
-                .iter()
-                .map(|(_, v)| v.timestamp)
-                .max()
-                .unwrap_or(0); // 0 for introduction gossip (empty delta)
+            let max_sent_ts = delta.iter().map(|(_, v)| v.timestamp).max().unwrap_or(0); // 0 for introduction gossip (empty delta)
 
             let msg = GossipMessage {
                 from_node_id: self.store.node_id().to_string(),
@@ -265,13 +257,10 @@ async fn handle_inbound(
 /// Open a short-lived TCP connection, send a gossip message, and receive ack.
 /// Both steps have a 5-second timeout to prevent tasks from hanging on dead peers.
 async fn send_and_ack(addr: &str, msg: &GossipMessage) -> anyhow::Result<GossipAck> {
-    let mut stream = tokio::time::timeout(
-        Duration::from_secs(5),
-        TcpStream::connect(addr),
-    )
-    .await
-    .map_err(|_| anyhow::anyhow!("connect timeout to {addr}"))?
-    .map_err(|e| anyhow::anyhow!("connect failed to {addr}: {e}"))?;
+    let mut stream = tokio::time::timeout(Duration::from_secs(5), TcpStream::connect(addr))
+        .await
+        .map_err(|_| anyhow::anyhow!("connect timeout to {addr}"))?
+        .map_err(|e| anyhow::anyhow!("connect failed to {addr}: {e}"))?;
 
     write_message(&mut stream, msg).await?;
 

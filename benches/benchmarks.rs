@@ -1,6 +1,4 @@
-use criterion::{
-    black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
-};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use state_sync_engine::state::{LwwValue, StateStore};
 use std::time::Duration;
 
@@ -95,9 +93,9 @@ fn bench_merge_delta_size(c: &mut Criterion) {
                 (
                     format!("key:{i}"),
                     LwwValue {
-                        value:     format!("v{i}"),
+                        value: format!("v{i}"),
                         timestamp: 999_999_999_999_999,
-                        node_id:   "remote".into(),
+                        node_id: "remote".into(),
                     },
                 )
             })
@@ -118,8 +116,16 @@ fn bench_merge_delta_size(c: &mut Criterion) {
 // Establishes a lower bound on state update cost.  Anything in the actual
 // store benchmarks that is slower than this is lock or allocation overhead.
 fn bench_lww_merge(c: &mut Criterion) {
-    let a = LwwValue { value: "a".into(), timestamp: 100, node_id: "node-z".into() };
-    let b = LwwValue { value: "b".into(), timestamp: 200, node_id: "node-a".into() };
+    let a = LwwValue {
+        value: "a".into(),
+        timestamp: 100,
+        node_id: "node-z".into(),
+    };
+    let b = LwwValue {
+        value: "b".into(),
+        timestamp: 200,
+        node_id: "node-a".into(),
+    };
 
     c.bench_function("lww_merge", |b_fn| {
         b_fn.iter(|| LwwValue::merge(black_box(&a), black_box(&b)));

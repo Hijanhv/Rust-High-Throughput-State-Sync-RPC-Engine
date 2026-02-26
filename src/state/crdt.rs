@@ -82,16 +82,32 @@ mod tests {
 
     #[test]
     fn merge_higher_timestamp_wins() {
-        let old = LwwValue { value: "old".into(), timestamp: 100, node_id: "a".into() };
-        let new = LwwValue { value: "new".into(), timestamp: 200, node_id: "b".into() };
+        let old = LwwValue {
+            value: "old".into(),
+            timestamp: 100,
+            node_id: "a".into(),
+        };
+        let new = LwwValue {
+            value: "new".into(),
+            timestamp: 200,
+            node_id: "b".into(),
+        };
         assert_eq!(LwwValue::merge(&old, &new).value, "new");
         assert_eq!(LwwValue::merge(&new, &old).value, "new"); // commutative
     }
 
     #[test]
     fn merge_tie_broken_by_node_id() {
-        let a = LwwValue { value: "a".into(), timestamp: 100, node_id: "node-z".into() };
-        let b = LwwValue { value: "b".into(), timestamp: 100, node_id: "node-a".into() };
+        let a = LwwValue {
+            value: "a".into(),
+            timestamp: 100,
+            node_id: "node-z".into(),
+        };
+        let b = LwwValue {
+            value: "b".into(),
+            timestamp: 100,
+            node_id: "node-a".into(),
+        };
         // "node-z" > "node-a" lexicographically
         assert_eq!(LwwValue::merge(&a, &b).value, "a");
         assert_eq!(LwwValue::merge(&b, &a).value, "a"); // commutative

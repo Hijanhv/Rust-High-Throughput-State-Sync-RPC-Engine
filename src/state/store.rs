@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use parking_lot::RwLock;
+use std::collections::HashMap;
 use tokio::sync::broadcast;
 use tracing::{debug, trace};
 
@@ -142,7 +142,10 @@ impl StateStore {
         // ── lock released ──────────────────────────────────────────────────
         trace!(key = %key, ts = winner.timestamp, "state.set");
         // Ignore send errors — zero subscribers is fine
-        let _ = self.inner.event_tx.send(StateEvent { key, value: winner.clone() });
+        let _ = self.inner.event_tx.send(StateEvent {
+            key,
+            value: winner.clone(),
+        });
         winner
     }
 

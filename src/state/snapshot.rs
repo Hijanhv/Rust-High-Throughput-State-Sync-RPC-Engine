@@ -1,5 +1,5 @@
-use anyhow::Result;
 use crate::state::store::StateDelta;
+use anyhow::Result;
 
 /// Serialize a state delta to a compact byte representation.
 ///
